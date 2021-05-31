@@ -45,6 +45,17 @@ spring:
       max-open-prepared-statements: 50
       max-pool-prepared-statement-per-connection-size: 20
 
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password: ""
+    pool:
+      max-active: 8
+      max-wait: -1ms
+      max-idle: 8
+      min-idle: 0
+
 #分页插件
 pagehelper:
   helperDialect: mysql
