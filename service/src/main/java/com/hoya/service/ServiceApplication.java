@@ -1,10 +1,12 @@
 package com.hoya.service;
 
+import com.hoya.core.annotation.EnableGlobalExceptionHandle;
+import com.hoya.core.annotation.EnableGlobalResultResponse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-//@EnableGlobalExceptionHandle
-//@EnableGlobalResultResponse
+@EnableGlobalExceptionHandle
+@EnableGlobalResultResponse
 @SpringBootApplication
 public class ServiceApplication {
 
