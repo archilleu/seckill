@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Slf4j
 @RestController
 @RequestMapping("/")
@@ -20,9 +22,9 @@ public class LoginController {
     private MiaoShaUserService miaoShaUserService;
 
     @PostMapping("/login")
-    public void login(@RequestBody @Validated LoginVo loginVo) {
+    public void login(@RequestBody @Validated LoginVo loginVo, HttpServletResponse response) {
         log.info("登录开始 start! login:{}", JSON.toJSON(loginVo));
-        miaoShaUserService.login(loginVo);
+        miaoShaUserService.login(loginVo, response);
     }
 
 }

@@ -3,6 +3,8 @@ package com.hoya.service.server.impl;
 import com.hoya.core.exception.ServerExceptionForbidden;
 import com.hoya.core.exception.ServerExceptionNotFound;
 import com.hoya.core.exception.ServerExceptionServerError;
+import com.hoya.service.commons.redis.RedisClient;
+import com.hoya.service.commons.redis.impl.MiaoShaUserKeyPrefix;
 import com.hoya.service.dao.MiaoShaUserMapper;
 import com.hoya.service.model.MiaoShaUser;
 import com.hoya.service.server.MiaoShaUserService;
@@ -15,12 +17,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
+import static com.hoya.service.constant.CustomerConstant.COOKIE_NAME_TOKEN;
+
 @Slf4j
 @Service
 public class MiaoShaUserServiceImpl implements MiaoShaUserService {
 
     @Autowired
     private MiaoShaUserMapper miaoShaUserMapper;
+
+    @Autowired
+    RedisClient redisClient;
 
     @Override
     public MiaoShaUserVo getById(Long id) {
@@ -36,7 +46,7 @@ public class MiaoShaUserServiceImpl implements MiaoShaUserService {
     }
 
     @Override
-    public void login(LoginVo loginVo) {
+    public void login(LoginVo loginVo, HttpServletResponse response) {
         String mobile = loginVo.getMobile();
         String formPass = loginVo.getPassword();
         MiaoShaUserVo userVo = getByMobile(mobile);
@@ -51,6 +61,7 @@ public class MiaoShaUserServiceImpl implements MiaoShaUserService {
 
         // 生成token
         String token = UUIDUtil.getUUid();
+        addCookie(token, userVo, response);
         return;
     }
 
@@ -69,6 +80,16 @@ public class MiaoShaUserServiceImpl implements MiaoShaUserService {
             log.error("***获取秒杀用户对象失败！error:{}", e);
             throw new ServerExceptionServerError("获取对象失败");
         }
+    }
+
+    public void addCookie(String token, MiaoShaUserVo user, HttpServletResponse response) {
+        if (false == redisClient.set(MiaoShaUserKeyPrefix.token, token, user)) {
+            //TODO: throw new ServerExceptionServerError("登陆失败");
+        }
+        Cookie cookie = new Cookie(COOKIE_NAME_TOKEN, token);
+        cookie.setMaxAge((int) MiaoShaUserKeyPrefix.token.expireSeconds());
+        cookie.setPath("/");
+        response.addCookie(cookie);
     }
 
 //    // http://blog.csdn.net/tTU1EvLDeLFq5btqiK/article/details/78693323
