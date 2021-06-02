@@ -82,6 +82,12 @@ public class MiaoShaUserServiceImpl implements MiaoShaUserService {
         }
     }
 
+    @Override
+    public MiaoShaUser getByToken(String token) {
+        MiaoShaUser user = (MiaoShaUser) redisClient.get(MiaoShaUserKeyPrefix.token, token, MiaoShaUser.class);
+        return user;
+    }
+
     public void addCookie(String token, MiaoShaUserVo user, HttpServletResponse response) {
         if (false == redisClient.set(MiaoShaUserKeyPrefix.token, token, user)) {
             //TODO: throw new ServerExceptionServerError("登陆失败");
