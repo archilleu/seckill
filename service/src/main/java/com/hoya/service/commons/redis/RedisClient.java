@@ -44,7 +44,8 @@ public class RedisClient {
 
     public <T> T get(String key, Class<T> clazz) {
         try (Jedis jedis = jedisPool.getResource()) {
-            T t = stringToBean(key, clazz);
+            String str = jedis.get(key);
+            T t = stringToBean(str, clazz);
             return t;
         } catch (Exception e) {
             return null;

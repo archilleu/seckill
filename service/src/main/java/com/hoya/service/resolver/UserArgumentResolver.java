@@ -19,6 +19,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static com.hoya.service.constant.CustomerConstant.COOKIE_NAME_TOKEN;
 
@@ -57,10 +58,10 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
     private String getCookieToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        Cookie cookieValue = Arrays.stream(cookies).filter(cookie -> cookie.equals(COOKIE_NAME_TOKEN)).findFirst().get();
-        if (null == cookieValue) {
-            return "";
+        Optional<Cookie> val = Arrays.stream(cookies).filter(cookie -> cookie.getName().equals(COOKIE_NAME_TOKEN)).findFirst();
+        if (val.isPresent()) {
+            return val.get().getValue();
         }
-        return cookieValue.getValue();
+        return "";
     }
 }
