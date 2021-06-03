@@ -8,8 +8,8 @@ public interface GoodsService {
 
     List<GoodsVo> goodsVoList();
 
-    GoodsVo getGoodsVoByGoodId(Long goodId);
+    GoodsVo getGoodsVoByGoodId(Long goodsId);
 
     Boolean reduceStock(GoodsVo goods);
-   
+
 }

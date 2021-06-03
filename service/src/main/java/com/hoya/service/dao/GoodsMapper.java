@@ -1,6 +1,7 @@
 package com.hoya.service.dao;
 
 import com.hoya.service.model.Goods;
+import com.hoya.service.model.MiaoShaGoods;
 import com.hoya.service.vo.GoodsVo;
 
 import java.util.List;
@@ -17,8 +18,8 @@ public interface GoodsMapper {
 
     List<GoodsVo> goodsVoList();
 
-    GoodsVo goodsVoByGoodsId(Long goodsId);
-
     GoodsVo getGoodsVoByGoodsId(long goodsId);
+
+    int reduceStock(MiaoShaGoods miaoShaGoods);
 
 }
