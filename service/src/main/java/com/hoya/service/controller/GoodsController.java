@@ -1,6 +1,7 @@
 package com.hoya.service.controller;
 
 import com.hoya.core.exception.ServerExceptionNotFound;
+import com.hoya.service.annotation.AccessLimit;
 import com.hoya.service.model.MiaoShaUser;
 import com.hoya.service.server.GoodsService;
 import com.hoya.service.vo.GoodsDetailVo;
@@ -23,6 +24,7 @@ public class GoodsController {
     @Autowired
     private GoodsService goodsService;
 
+    @AccessLimit(seconds = 5, maxCount = 5, needLogin = true)
     @GetMapping("/detail/{goodsId}")
     public GoodsDetailVo goodsDetail(HttpServletResponse response, MiaoShaUser user, @PathVariable Long goodsId) {
         try {
