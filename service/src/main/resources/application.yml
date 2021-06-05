@@ -57,6 +57,26 @@ spring:
         max-idle: 8
         max-wait: -1
 
+  rabbitmq:
+    host: 127.0.0.1
+    password: guest
+    username: guest
+    port: 5672
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+        max-interval: 100000
+        multiplier: 1
+    listener:
+      simple:
+        default-requeue-rejected: true
+        auto-startup: true
+        prefetch: 1
+        max-concurrency: 10
+        concurrency: 10
+
 #分页插件
 pagehelper:
   helperDialect: mysql
