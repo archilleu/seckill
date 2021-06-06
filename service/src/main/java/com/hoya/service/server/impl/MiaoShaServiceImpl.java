@@ -39,7 +39,7 @@ public class MiaoShaServiceImpl implements MiaoshaService {
     RedisClient redisClient;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor=Exception.class)
     public OrderInfoVo miaosha(MiaoShaUserVo user, GoodsVo goods) {
         // 1.减库存
         goodsService.reduceStock(goods);

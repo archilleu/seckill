@@ -6,6 +6,32 @@ public interface CustomerConstant {
 
     String COOKIE_NAME_TOKEN = "token";
 
+    //正在进行中
+    Integer MS_ING = 0;
+
+    //秒杀成功
+    Integer MS_S = 1;
+
+    //秒杀失败
+    Integer MS_F = -1;
+
+    //秒杀前缀
+    class RedisKeyPrefix {
+
+        public static final String PRODUCT_STOCK = "product_stock";
+
+        public static final String PRODUCT = "product";
+
+        public static final String MIAOSHA_ORDER = "miaosha_order";
+
+        public static final String MIAOSHA_ORDER_WAIT = "miaosha_order_wait";
+
+        public static final String MIAOSHA_VERIFY_CODE = "miaosha_verify_code";
+
+        public static final String MIAOSHA_ORDER_TOKEN = "miaosha_order_token";
+
+    }
+
     @Getter
     public enum MiaoShaStatus {
 

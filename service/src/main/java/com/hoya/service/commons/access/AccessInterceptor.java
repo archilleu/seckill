@@ -5,8 +5,7 @@ package com.hoya.service.commons.access;
  */
 
 import com.alibaba.fastjson.JSON;
-import com.hoya.core.exception.ServerException;
-import com.hoya.core.exception.ServerExceptionForbidden;
+import com.hoya.core.exception.ServerError;
 import com.hoya.service.annotation.AccessLimit;
 import com.hoya.service.commons.redis.RedisClient;
 import com.hoya.service.commons.redis.impl.AccessKeyPrefix;
@@ -61,7 +60,7 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
         String key = request.getRequestURI();
         if (needLogin) {
             if (user == null) {
-                render(response, new ServerExceptionForbidden("当前访问过多"));
+                render(response, new ServerError(403, "用户未登录"));
                 return false;
             }
             key += "_" + user.getNickname();
@@ -77,7 +76,7 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
         } else if (count < maxCount) {
             redisClient.incr(ak, key);
         } else {
-            render(response, new ServerExceptionForbidden("当前访问过多"));
+            render(response, new ServerError(403, "当前访问过多"));
             return false;
         }
 
@@ -90,9 +89,9 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
         UserContext.removeUser();
     }
 
-    private void render(HttpServletResponse response, ServerException e) throws Exception {
+    private void render(HttpServletResponse response, ServerError e) throws Exception {
         response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(e.getCode());
+        response.setStatus(403);
         OutputStream out = response.getOutputStream();
         out.write(JSON.toJSONString(e).getBytes("UTF-8"));
         out.flush();

@@ -1,18 +1,17 @@
-package com.hoya.service.server.impl;
+package com.hoya.service.commons.rabbitmq;
 
-import com.hoya.service.commons.rabbitmq.MQConfig;
-import com.hoya.service.commons.rabbitmq.MiaoshaMessage;
 import com.hoya.service.commons.redis.RedisClient;
+import com.hoya.service.commons.redis.impl.GoodsKeyPrefix;
 import com.hoya.service.model.MiaoShaUser;
 import com.hoya.service.server.GoodsService;
 import com.hoya.service.server.MiaoshaService;
 import com.hoya.service.server.OrderService;
-import com.hoya.service.server.RabbitMqService;
+import com.hoya.service.util.CommonMethod;
+import com.hoya.service.util.ProductSoutOutMap;
 import com.hoya.service.vo.GoodsVo;
 import com.hoya.service.vo.MiaoShaOrderVo;
 import com.hoya.service.vo.MiaoShaUserVo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class RabbitMqServiceImpl implements RabbitMqService {
+public class RabbitMqListener {
 
     @Autowired
     GoodsService goodsService;
@@ -32,9 +31,8 @@ public class RabbitMqServiceImpl implements RabbitMqService {
     MiaoshaService miaoshaService;
 
     @Autowired
-    AmqpTemplate amqpTemplate;
+    RedisClient redisClient;
 
-    @Override
     @RabbitListener(queues = MQConfig.MIAOSHA_QUEUE)
     public void receive(String message) {
         log.info("receive message:" + message);
@@ -57,12 +55,17 @@ public class RabbitMqServiceImpl implements RabbitMqService {
         // 减库存下订单写入秒杀系统
         MiaoShaUserVo userVo = new MiaoShaUserVo();
         BeanUtils.copyProperties(user, userVo);
-        miaoshaService.miaosha(userVo, goods);
+        try {
+            miaoshaService.miaosha(userVo, goods);
+        } catch (Exception e) {
+            // 秒杀失败，回滚
+            redisClient.incr(GoodsKeyPrefix.getMiaoshaGoodsStock, String.valueOf(goodsId));
+            ProductSoutOutMap.clearSoldOut(goodsId);
+        }
+
+        // 秒杀成功，设置redis标志
+        String msKey = CommonMethod.getMiaoshaOrderRedisKey(String.valueOf(order.getUserId()), String.valueOf(goodsId));
+        redisClient.set(msKey, order);
     }
 
-    @Override
-    public void sendMiaoshaMessage(MiaoshaMessage message) {
-        String msg = RedisClient.beanToString(message);
-        amqpTemplate.convertAndSend(MQConfig.MIAOSHA_QUEUE, msg);
-    }
 }

@@ -80,7 +80,7 @@ public class RedisClient {
             String realKey = prefix.getPrefix() + key;
             return jedis.decr(realKey);
         } catch (Exception e) {
-            return 0L;
+            return null;
         }
     }
 

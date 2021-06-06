@@ -1,7 +1,7 @@
 package com.hoya.service.controller;
 
 import com.hoya.core.exception.ServerExceptionNotFound;
-import com.hoya.service.annotation.AccessLimit;
+import com.hoya.service.constant.CustomerConstant;
 import com.hoya.service.model.MiaoShaUser;
 import com.hoya.service.server.GoodsService;
 import com.hoya.service.vo.GoodsDetailVo;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Slf4j
@@ -24,9 +23,8 @@ public class GoodsController {
     @Autowired
     private GoodsService goodsService;
 
-    @AccessLimit(seconds = 5, maxCount = 5, needLogin = true)
     @GetMapping("/detail/{goodsId}")
-    public GoodsDetailVo goodsDetail(HttpServletResponse response, MiaoShaUser user, @PathVariable Long goodsId) {
+    public GoodsDetailVo goodsDetail(MiaoShaUser user, @PathVariable Long goodsId) {
         try {
             GoodsVo goods = goodsService.getGoodsVoByGoodId(goodsId);
             long startAt = goods.getStartDate().getTime();
@@ -36,15 +34,15 @@ public class GoodsController {
             int remainSeconds = 0;
             if (now < startAt) {
                 // 秒杀还没开始
-                miaoshaStatus = 0;
+                miaoshaStatus = CustomerConstant.MiaoShaStatus.NOT_START.getCode();
                 remainSeconds = (int) ((startAt - now) / 1000);
             } else if (now > startAt) {
                 // 秒杀结束
-                miaoshaStatus = 2;
+                miaoshaStatus = CustomerConstant.MiaoShaStatus.END.getCode();
                 remainSeconds = -1;
             } else {
                 // 秒杀进行中
-                miaoshaStatus = 1;
+                miaoshaStatus = CustomerConstant.MiaoShaStatus.START.getCode();
                 remainSeconds = 0;
             }
 
