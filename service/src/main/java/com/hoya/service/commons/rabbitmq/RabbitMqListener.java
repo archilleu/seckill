@@ -11,6 +11,7 @@ import com.hoya.service.util.ProductSoutOutMap;
 import com.hoya.service.vo.GoodsVo;
 import com.hoya.service.vo.MiaoShaOrderVo;
 import com.hoya.service.vo.MiaoShaUserVo;
+import com.hoya.service.vo.OrderInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.BeanUtils;
@@ -33,7 +34,11 @@ public class RabbitMqListener {
     @Autowired
     RedisClient redisClient;
 
-    @RabbitListener(queues = MQConfig.MIAOSHA_QUEUE)
+    // TODO: 如果出现异常需要重试?
+    // FIXME: 如果多线程处理需要如何同步
+    // Spring Boot RabbitMq 并发与限流(https://blog.csdn.net/linsongbin1/article/details/100658415)
+    //（https://blog.csdn.net/chenghan_yang/article/details/104246869）
+    @RabbitListener(queues = MQConfig.MIAOSHA_QUEUE, concurrency="1")
     public void receive(String message) {
         log.info("receive message:" + message);
 
@@ -56,16 +61,16 @@ public class RabbitMqListener {
         MiaoShaUserVo userVo = new MiaoShaUserVo();
         BeanUtils.copyProperties(user, userVo);
         try {
-            miaoshaService.miaosha(userVo, goods);
+            OrderInfoVo miaoShaOrderVo = miaoshaService.miaosha(userVo, goods);
+            // 秒杀成功，设置redis标志
+            String msKey = CommonMethod.getMiaoshaOrderRedisKey(String.valueOf(user.getId()), String.valueOf(goodsId));
+            redisClient.set(msKey, miaoShaOrderVo);
         } catch (Exception e) {
             // 秒杀失败，回滚
             redisClient.incr(GoodsKeyPrefix.getMiaoshaGoodsStock, String.valueOf(goodsId));
             ProductSoutOutMap.clearSoldOut(goodsId);
         }
 
-        // 秒杀成功，设置redis标志
-        String msKey = CommonMethod.getMiaoshaOrderRedisKey(String.valueOf(order.getUserId()), String.valueOf(goodsId));
-        redisClient.set(msKey, order);
     }
 
 }

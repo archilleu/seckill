@@ -22,4 +22,6 @@ public interface GoodsMapper {
 
     int reduceStock(MiaoShaGoods miaoShaGoods);
 
+    int reduceMiaoshaStock(MiaoShaGoods miaoShaGoods);
+
 }

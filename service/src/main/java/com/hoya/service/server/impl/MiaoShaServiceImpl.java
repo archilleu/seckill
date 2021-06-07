@@ -41,7 +41,7 @@ public class MiaoShaServiceImpl implements MiaoshaService {
     @Override
     @Transactional(rollbackFor=Exception.class)
     public OrderInfoVo miaosha(MiaoShaUserVo user, GoodsVo goods) {
-        // 1.减库存
+        // 1.减库存(miaosha_goods和goods两张表)
         goodsService.reduceStock(goods);
 
         // 2.生成订单

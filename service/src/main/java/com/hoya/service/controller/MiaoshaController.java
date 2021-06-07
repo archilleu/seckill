@@ -52,7 +52,7 @@ public class MiaoshaController {
         try {
             List<GoodsVo> list = goodsService.goodsVoList();
             for (GoodsVo goodsVo : list) {
-                redisClient.set(GoodsKeyPrefix.getMiaoshaGoodsStock, String.valueOf(goodsVo.getId()), goodsVo.getGoodsStock());
+                redisClient.set(GoodsKeyPrefix.getMiaoshaGoodsStock, String.valueOf(goodsVo.getId()), goodsVo.getStockCount());
             }
         } catch (Exception e) {
             log.error("商品预热失败:{}", e);
@@ -86,6 +86,7 @@ public class MiaoshaController {
 
     /**
      * 开始秒杀
+     * FIXME: 如何防止用户不停的刷新导致消息队列充满同一个用户的秒杀信息
      *
      * @param user
      * @param path
@@ -103,7 +104,7 @@ public class MiaoshaController {
         BeanUtils.copyProperties(user, miaoShaUserVo);
         boolean check = miaoshaService.checkPath(miaoShaUserVo, goodsId, path);
         if (!check) {
-            throw new ServerExceptionForbidden("秒杀失败");
+            throw new ServerExceptionForbidden("秒杀失败,路径过期");
         }
 
         // redis zookeeper 判断

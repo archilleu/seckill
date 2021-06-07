@@ -6,6 +6,7 @@ import com.hoya.service.server.GoodsService;
 import com.hoya.service.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,9 +27,12 @@ public class GoodsServiceImpl implements GoodsService {
     }
 
     @Override
+    @Transactional
     public Boolean reduceStock(GoodsVo goods) {
         MiaoShaGoods miaoShaGoods = new MiaoShaGoods();
         miaoShaGoods.setGoodsId(goods.getId());
-        return goodsMapper.reduceStock(miaoShaGoods) > 0;
+        goodsMapper.reduceStock(miaoShaGoods);
+        goodsMapper.reduceMiaoshaStock(miaoShaGoods);
+        return true;
     }
 }
