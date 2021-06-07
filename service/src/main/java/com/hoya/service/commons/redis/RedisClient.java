@@ -27,12 +27,8 @@ public class RedisClient {
         return true;
     }
 
-    public void set(String key, String value) throws Exception {
-        set(key, value);
-    }
-
     public boolean set(String key, Object value) {
-        return set(key, value);
+        return set(key, value, 0);
     }
 
     public <T> boolean set(RedisKeyPrefix prefix, String key, T value) {
