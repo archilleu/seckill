@@ -84,6 +84,10 @@ pagehelper:
   supportMethodsArguments: true
   params: count=countSql
 
+zookeeper:
+  address: 127.0.0.1:2181
+  timeout: 200000
+
 management:
   endpoints:
     web:

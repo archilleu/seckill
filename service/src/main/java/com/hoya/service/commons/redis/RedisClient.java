@@ -31,6 +31,21 @@ public class RedisClient {
         return set(key, value, 0);
     }
 
+    public boolean setnx(String key, Object value, long expire) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            String str = beanToString(value);
+            Long res = jedis.setnx(key, str);
+            if (expire > 0) {
+                if (res > 0) {
+                    jedis.expire(key, expire);
+                }
+            }
+            return res == 1;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public <T> boolean set(RedisKeyPrefix prefix, String key, T value) {
         //生成真正的key
         String realKey = prefix.getPrefix() + key;
@@ -85,6 +100,15 @@ public class RedisClient {
             //生成真正的key
             String realKey = prefix.getPrefix() + key;
             long ret = jedis.del(realKey);
+            return ret > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean delete(String key) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            long ret = jedis.del(key);
             return ret > 0;
         } catch (Exception e) {
             return false;

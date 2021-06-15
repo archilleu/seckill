@@ -90,7 +90,7 @@ public class MiaoShaUserServiceImpl implements MiaoShaUserService {
 
     public void addCookie(String token, MiaoShaUserVo user, HttpServletResponse response) {
         if (false == redisClient.set(MiaoShaUserKeyPrefix.token, token, user)) {
-            //TODO: throw new ServerExceptionServerError("登陆失败");
+            throw new ServerExceptionServerError("登陆失败");
         }
         Cookie cookie = new Cookie(COOKIE_NAME_TOKEN, token);
         cookie.setMaxAge((int) MiaoShaUserKeyPrefix.token.expireSeconds());

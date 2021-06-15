@@ -33,7 +33,7 @@ public interface CustomerConstant {
     }
 
     @Getter
-    public enum MiaoShaStatus {
+    enum MiaoShaStatus {
 
         NOT_START(0, "未开始秒杀"),
         START(1, "秒杀开始"),
@@ -45,6 +45,16 @@ public interface CustomerConstant {
         private MiaoShaStatus(int code, String message) {
             this.code = code;
             this.message = message;
+        }
+
+    }
+
+    class ZookeeperPathPrefix {
+
+        public static final String PRODUCT_SOLD_OUT = "/product_sold_out";
+
+        public static String getZKSoldOutProductPath(Long goodId) {
+            return ZookeeperPathPrefix.PRODUCT_SOLD_OUT + "/" + goodId;
         }
 
     }

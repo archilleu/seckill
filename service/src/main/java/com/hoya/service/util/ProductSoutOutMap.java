@@ -15,4 +15,8 @@ public class ProductSoutOutMap {
     public static void clearSoldOut(Long goodsId) {
         productSoldOutMap.remove(goodsId);
     }
+
+    public static Boolean isSoldOut(Long goodsId) {
+        return productSoldOutMap.get(goodsId);
+    }
 }

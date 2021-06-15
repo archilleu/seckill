@@ -2,6 +2,8 @@ package com.hoya.service.commons.rabbitmq;
 
 import com.hoya.service.commons.redis.RedisClient;
 import com.hoya.service.commons.redis.impl.GoodsKeyPrefix;
+import com.hoya.service.commons.zk.ZkApi;
+import com.hoya.service.constant.CustomerConstant;
 import com.hoya.service.model.MiaoShaUser;
 import com.hoya.service.server.GoodsService;
 import com.hoya.service.server.MiaoshaService;
@@ -23,22 +25,25 @@ import org.springframework.stereotype.Service;
 public class RabbitMqListener {
 
     @Autowired
-    GoodsService goodsService;
+    private GoodsService goodsService;
 
     @Autowired
-    OrderService orderService;
+    private OrderService orderService;
 
     @Autowired
-    MiaoshaService miaoshaService;
+    private MiaoshaService miaoshaService;
 
     @Autowired
-    RedisClient redisClient;
+    private RedisClient redisClient;
+
+    @Autowired
+    private ZkApi zkApi;
 
     // TODO: 如果出现异常需要重试?
     // FIXME: 如果多线程处理需要如何同步
     // Spring Boot RabbitMq 并发与限流(https://blog.csdn.net/linsongbin1/article/details/100658415)
     //（https://blog.csdn.net/chenghan_yang/article/details/104246869）
-    @RabbitListener(queues = MQConfig.MIAOSHA_QUEUE, concurrency="1")
+    @RabbitListener(queues = MQConfig.MIAOSHA_QUEUE, concurrency = "1")
     public void receive(String message) {
         log.info("receive message:" + message);
 
@@ -65,10 +70,21 @@ public class RabbitMqListener {
             // 秒杀成功，设置redis标志
             String msKey = CommonMethod.getMiaoshaOrderRedisKey(String.valueOf(user.getId()), String.valueOf(goodsId));
             redisClient.set(msKey, miaoShaOrderVo);
+            String waitKey = CommonMethod.getMiaoshaOrderWaitFlagRedisKey(String.valueOf(user.getId()), String.valueOf(goodsId));
+            redisClient.delete(waitKey);
         } catch (Exception e) {
             // 秒杀失败，回滚
-            redisClient.incr(GoodsKeyPrefix.getMiaoshaGoodsStock, String.valueOf(goodsId));
-            ProductSoutOutMap.clearSoldOut(goodsId);
+            try {
+                //修改zk的商品售完标记为false
+                redisClient.incr(GoodsKeyPrefix.getMiaoshaGoodsStock, String.valueOf(goodsId));
+                ProductSoutOutMap.clearSoldOut(goodsId);
+                String zkGoodsIdPath = CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(goodsId);
+                if (zkApi.exists(zkGoodsIdPath, true) != null) {
+                    zkApi.updateNode(zkGoodsIdPath, "false");
+                }
+            } catch (Exception e1) {
+                log.error("修改zk商品售完标记异常", e1);
+            }
         }
 
     }

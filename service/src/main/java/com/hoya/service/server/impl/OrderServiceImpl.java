@@ -1,5 +1,6 @@
 package com.hoya.service.server.impl;
 
+import com.hoya.service.dao.OrderInfoMapper;
 import com.hoya.service.model.OrderInfo;
 import com.hoya.service.server.MiaoshaService;
 import com.hoya.service.server.OrderInfoService;
@@ -24,6 +25,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     MiaoshaService miaoshaService;
+
+    @Autowired
+    OrderInfoMapper orderInfoMapper;
 
     @Override
     public MiaoShaOrderVo getMiaoshaOrderByUserIdGoodsId(Long userId, Long goodsId) {
@@ -56,6 +60,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderInfoVo getOrderById(Long orderId) {
-        return null;
+        OrderInfo orderInfo = orderInfoMapper.selectByPrimaryKey(orderId);
+        OrderInfoVo orderInfoVo = new OrderInfoVo();
+        BeanUtils.copyProperties(orderInfo, orderInfoVo);
+        return orderInfoVo;
     }
 }
